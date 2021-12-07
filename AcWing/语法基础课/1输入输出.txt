@@ -1,0 +1,51 @@
+1. 整数的输入输出
+
+#include <iostream>	// 头文件 里面有 cin cout
+#include <cstdio>       // 里面有 scanf() 和 printf()
+#include <cmath>	// 里面有常见的数学运算的函数 sqrt()
+using namespace std;	// 命名空间
+
+int main()		// main函数
+{
+    int a, b;
+    cin >> a >> b;
+    cout << a + b << endl;
+    return 0;
+}
+
+2. 字符串 + 整数的输出
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+int main()
+{
+    int a, b, c, d;
+    cin >> a >> b >> c >> d;
+    cout << "DIFERENCA = " << a * b - c * d << endl;
+    return 0;
+}
+3. scanf 和 printf 的读入读出 效率要比 cin cout 高
+#include <cstdio>
+
+using namespace std;
+
+int main()
+{
+    double pi = 3.14159, r;
+    scanf("%lf", &r);	// & 取地址符号
+    printf("A=%.4lf\n", pi * r * r);
+    return 0;
+}
+(1)	Int：%d
+(2)	Float: %f, 默认保留6位小数
+(3)	Double: %lf， 默认保留6位小数
+(4)	Char: %c, 回车也是一个字符，用’\n’表示
+	long long %lld
+// cin 会帮忙过滤空格 
+(1)	Float, double等输出保留若干位小数时用：%.4f, %3lf
+(2)	最小数字宽度
+	a.	%8.3f, 表示这个浮点数的最小宽度为8，保留3位小数，当宽度不足时在前面补空格。
+	b.	%-8.3f，表示最小宽度为8，保留3位小数，当宽度不足时在后面补上空格
+	c.	%08.3f, 表示最小宽度为8，保留3位小数，当宽度不足时在前面补上0
