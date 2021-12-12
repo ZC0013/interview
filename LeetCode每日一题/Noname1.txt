@@ -1,0 +1,111 @@
+求三个无重叠子数组的最大和 的暴力做法 时间复杂度分别为 O(N), O(N^2), O(N^3)
+vector<int> maxSumOfOneSubarrays(vector<int>& nums, int k) {
+        int n = nums.size();
+        vector<int> res = {-1};
+        int sum[n + 1];
+        memset(sum, 0, n);
+        int max = 0;
+        
+        for(int i = 1; i <= n; i ++) sum[i] = sum[i - 1] + nums[i - 1];
+        for(int i = 0; i < n - k + 1; i ++)
+        {
+            int tmp = sum[i + k] - sum[i];
+            if(tmp > max)
+            {
+                max = tmp;
+                res = {i};
+            }
+        }
+            
+        // for(int i = 0; i <= n; i ++) cout << sum[i] << ' ';
+        return res;
+    }
+
+vector<int> maxSumOfTwoSubarrays(vector<int>& nums, int k) {
+        int n = nums.size();
+        vector<int> res = {-1};
+        int sum[n + 1];
+        memset(sum, 0, n);
+        int max = 0;
+        
+        for(int i = 1; i <= n; i ++) sum[i] = sum[i - 1] + nums[i - 1];
+        for(int i = 0; i < n - k + 1; i ++)
+        {
+            int sum1 = sum[i + k] - sum[j];
+            for(int j = i + k; j < n - k + 1; j ++)
+            {
+                int tmp = sum[j + k] - sum[i];
+                if(tmp + sum1 > max)
+                {
+                    max = tmp + sum1;
+                    res = {i,j};
+                }
+            }
+        }
+       
+        // for(int i = 0; i <= n; i ++) cout << sum[i] << ' ';
+        return res;
+    }
+
+vector<int> maxSumOfThreeSubarrays(vector<int>& nums, int k) {
+        int n = nums.size();
+        vector<int> res = {-1};
+        int sum[n + 1];
+        memset(sum, 0, n);
+        int max = 0;
+        for(int i = 1; i <= n; i ++) sum[i] = sum[i - 1] + nums[i - 1];
+
+        for(int i = 0; i < n - k + 1; i ++)
+        {
+            int sum1 = sum[i + k] - sum[i];
+            for(int j = i + k; j < n - k + 1; j ++)
+            {   
+                int sum2 = sum[j + k] - sum[j];
+                for(int x = j + k; x < n - k + 1; x ++)
+                {
+                    int tmp = sum[x + k] - sum[x];
+                    if(tmp + sum1 + sum2 > max)
+                    {
+                        max = tmp + sum1 + sum2;
+                        res = {i,j,x};
+                    }
+                }
+                
+            }
+        }
+
+        return res;
+    }
+
+滑动窗口方法：
+vector<int> maxSumOfThreeSubarrays(vector<int> &nums, int k) {
+        vector<int> ans;
+        int sum1 = 0, maxSum1 = 0, maxSum1Idx = 0;
+        int sum2 = 0, maxSum12 = 0, maxSum12Idx1 = 0, maxSum12Idx2 = 0;
+        int sum3 = 0, maxTotal = 0;
+        for (int i = k * 2; i < nums.size(); ++i) {
+            sum1 += nums[i - k * 2];
+            sum2 += nums[i - k];
+            sum3 += nums[i];
+            if (i >= k * 3 - 1) {
+                if (sum1 > maxSum1) {
+                    maxSum1 = sum1;
+                    maxSum1Idx = i - k * 3 + 1;
+                }
+                if (maxSum1 + sum2 > maxSum12) {
+                    maxSum12 = maxSum1 + sum2;
+                    maxSum12Idx1 = maxSum1Idx;
+                    maxSum12Idx2 = i - k * 2 + 1;
+                }
+                if (maxSum12 + sum3 > maxTotal) {
+                    maxTotal = maxSum12 + sum3;
+                    ans = {maxSum12Idx1, maxSum12Idx2, i - k + 1};
+                }
+                sum1 -= nums[i - k * 3 + 1];
+                sum2 -= nums[i - k * 2 + 1];
+                sum3 -= nums[i - k + 1];
+            }
+        }
+        return ans;
+    }
+};
