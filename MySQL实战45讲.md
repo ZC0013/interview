@@ -1386,11 +1386,31 @@ InnoDB 的策略是尽量使用内存，因此对于一个长时间运行的库�
 
 ## 4. InnoDB 刷脏页的控制策略
 
-首先，你要正确地告诉 InnoDB 所在主机的 IO 能力，这样 InnoDB 才能知道需要全力刷脏页的时候，可以刷多快。这就要用到 innodb_io_capacity 这个参数了，它会告诉 InnoDB 你的磁盘能力。这个值我建议你设置成磁盘的 IOPS：IOPS (Input/Output Per Second)即每秒的输入输出量(或读写次数)，是衡量磁盘性能的主要指标之一。
+首先，你要正确地告诉 InnoDB 所在主机的 IO 能力，这样 InnoDB 才能知道需要全力刷脏页的时候，可以刷多快。这就要用到 innodb_io_capacity 这个参数了，它会告诉 InnoDB 你的磁盘能力。这个值我建议你设置成磁盘的 IOPS：**IOPS (Input/Output Per Second)即每秒的输入输出量(或读写次数)，是衡量磁盘性能的主要指标之一。**
 
 **设计策略控制刷脏页的速度，会参考哪些因素呢？**
 
 InnoDB 的刷盘速度就是要参考这两个因素：一个是脏页比例，一个是 redo log 写盘速度。
+
+解决办法：根据磁盘的IO真实情况，设置innodb_io_capacity 
+
+他的主机磁盘用的是 SSD，但是 innodb_io_capacity 的值设置的是 300。于是，InnoDB 认为这个系统的能力就这么差，所以刷脏页刷得特别慢，甚至比脏页生成的速度还慢，这样就造成了脏页累积，影响了查询和更新性能。建议设置成20000
+
+说 MySQL 的写入速度很慢，TPS 很低，但是数据库主机的 IO 压力并不大，也是因为这个原因。
+
+**你就要合理地设置 innodb_io_capacity 的值，并且平时要多关注脏页比例，不要让它经常接近 75%。**
+
+在 InnoDB 中，innodb_flush_neighbors 参数就是用来控制这个行为的，值为 1 的时候会有上述的“连坐”机制，值为 0 时表示不找邻居，自己刷自己的。
+
+找“邻居”这个优化在机械硬盘时代是很有意义的，可以减少很多随机 IO。
+
+机械硬盘的随机 IOPS 一般只有几百，相同的逻辑操作减少随机 IO 就意味着系统性能的大幅度提升。
+
+而如果使用的是 SSD 这类 IOPS 比较高的设备的话，我就建议你把 innodb_flush_neighbors 的值设置成 0。
+
+因为这时候 IOPS 往往不是瓶颈，而“只刷自己”，就能更快地执行完必要的刷脏页操作，减少 SQL 语句响应时间。
+
+在 MySQL 8.0 中，innodb_flush_neighbors 参数的默认值已经是 0 了。
 
 # 第13讲：数据库表的空间回收
 
@@ -1926,10 +1946,10 @@ QPS每秒查询率(Query Per Second)
 
 备库 B 跟主库 A 之间维持了一个长连接。主库 A 内部有一个线程，专门用于服务备库 B 的这个长连接。一个事务日志同步的完整过程是这样的：
 
-1. 在备库 B 上通过 change master 命令，设置主库 A 的 IP、端口、用户名、密码，以及要从哪个位置开始请求 binlog，这个位置包含文件名和日志偏移量。
-2. 在备库 B 上执行 start slave 命令，这时候备库会启动两个线程，就是图中的 io_thread 和 sql_thread。其中 io_thread 负责与主库建立连接。(主库开启 dump_thread，从库开启io_thread 和 sql_thread)
+1. 在备库 B 上通过 **change master** 命令，设置主库 A 的 IP、端口、用户名、密码，以及要从哪个位置开始请求 binlog，这个位置包含文件名和日志偏移量。
+2. 在备库 B 上执行 **start slave** 命令，这时候备库会启动两个线程，就是图中的 io_thread 和 sql_thread。其中 io_thread 负责与主库建立连接。(主库开启 dump_thread，从库开启io_thread 和 sql_thread)
 3. 主库 A 校验完用户名、密码后，开始按照备库 B 传过来的位置，从本地读取 binlog，发给 B。
-4. 备库 B 拿到 binlog 后，写到本地文件，称为中转日志（relay log）。sql_thread 读取中转日志，解析出日志里的命令，并执行。
+4. **备库 B 拿到 binlog 后，写到本地文件，称为中转日志（relay log）。sql_thread 读取中转日志，解析出日志里的命令，并执行。**
 
 ## 2. MySQL 双M 结构
 
@@ -2636,6 +2656,12 @@ select * from t1 straight_join t2 on (t1.a=t2.a);
 
 ### NLJ空间复杂度
 
+![img](md_image/d83ad1cbd6118603be795b26d38f8df6-16395764902872.jpg)
+
+```mysql
+select * from t1 straight_join t2 on (t1.a=t2.a);
+```
+
 1. 对驱动表 t1 做了全表扫描，这个过程需要扫描 100 行；
 2. 而对于每一行 R，根据 a 字段去表 t2 查找，走的是树搜索过程。由于我们构造的数据都是一一对应的，因此每次的搜索过程都只扫描一行，也是总共扫描 100 行；
 3. 所以，整个执行流程，总扫描行数是 200。
@@ -2701,7 +2727,7 @@ join_buffer 的大小是由参数 join_buffer_size 设定的，默认值是 256k
 **第一个问题：能不能使用 join 语句？**
 
 1. 如果可以使用 Index Nested-Loop Join 算法，也就是说可以用上被驱动表上的索引，其实是没问题的；
-2. 如果使用 Block Nested-Loop Join 算法，扫描行数就会过多。尤其是在大表上的 join 操作，这样可能要扫描被驱动表很多次，会占用大量的系统资源。所以这种 join 尽量不要用。
+2. 如果使用 Block Nested-Loop Join 算法，扫描行数就会过多。尤其是在大表上的 join 操作，这样可能要扫描被驱动表很多次，会占用大量的系统资源。**所以这种 join 尽量不要用。**
 
 所以你在判断要不要使用 join 语句时，就是看 explain 结果里面，Extra 字段里面有没有出现“Block Nested Loop”字样。
 
