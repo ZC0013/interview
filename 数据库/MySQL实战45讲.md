@@ -28,7 +28,7 @@ explain指令主要用于我们查看某条查询语句的具体执行计划
 explain select 1;
 ```
 
-![img](md_image/826579b63225def812330ef6c344a303.png)
+![img](../md_image/826579b63225def812330ef6c344a303.png)
 
 EXPLAIN指令中的各列的含义：
 
@@ -48,7 +48,7 @@ EXPLAIN指令中的各列的含义：
 mysql> select * from T where ID=10；
 ```
 
-<img src="md_image/0d2070e8f84c4801adbfa03bda1f98d9.png" alt="img" style="zoom: 50%;" />
+<img src="../md_image/0d2070e8f84c4801adbfa03bda1f98d9.png" alt="img" style="zoom: 50%;" />
 
 MySQL 可以分为 Server 层和存储引擎层两部分：
 
@@ -141,7 +141,7 @@ redo log(重做日志) 和 binlog(归档日志)
 
 InnoDB 的 redo log 是固定大小的，比如可以配置为一组 4 个文件，每个文件的大小是 1GB，从头开始写，写到末尾就又回到开头循环写，如下面这个图所示：
 
-<img src="md_image/16a7950217b3f0f4ed02db5db59562a7.png" alt="img" style="zoom:67%;" />
+<img src="../md_image/16a7950217b3f0f4ed02db5db59562a7.png" alt="img" style="zoom:67%;" />
 
 write pos 是当前记录的位置，一边写一边后移，写到第 3 号文件末尾后就回到 0 号文件开头。
 
@@ -176,11 +176,11 @@ insert into t24 values(5,5,'2018-11-09');
 
 statement：会记录下来执行的SQL语句原文，但是有些情况下会导致主备不一致
 
-![img](md_image/d67a38db154afff610ae3bb64e266826.png)
+![img](../md_image/d67a38db154afff610ae3bb64e266826.png)
 
 row：很占空间。比如你用一个 delete 语句删掉 10 万行数据，用 statement 的话就是一个 SQL 语句被记录到 binlog 中，占用几十个字节的空间。但如果用 row 格式的 binlog，就要把这 10 万条记录都写到 binlog 中。这样做，不仅会占用更大的空间，同时写 binlog 也要耗费 IO 资源，影响执行速度。但是不会存在主备不一致的情况。
 
-![img](md_image/c342cf480d23b05d30a294b114cebfc2.png)
+![img](../md_image/c342cf480d23b05d30a294b114cebfc2.png)
 
 mixed：MySQL 自己会判断这条 SQL 语句是否可能引起主备不一致，如果有可能，就用 row 格式，否则就用 statement 格式。
 
@@ -232,7 +232,7 @@ update语句在InnoDB引擎下的执行流程
 4. 执行器生成这个操作的 binlog，并把 binlog 写入磁盘。
 5. 执行器调用引擎的提交事务接口，引擎把刚刚写入的 redo log 改成提交（commit）状态，更新完成。
 
-<img src="md_image/2e5bff4910ec189fe1ee6e2ecc7b4bbe.png" alt="img" style="zoom:67%;" />
+<img src="../md_image/2e5bff4910ec189fe1ee6e2ecc7b4bbe.png" alt="img" style="zoom:67%;" />
 
 最后的写日志的部分将 redo log 拆分成了两部分：prepare 和 commit 也就是“两阶段提交”
 
@@ -400,7 +400,7 @@ Linux 系统中欲写入硬盘的资料有的时候为了效率起见，会写�
 
 事务提交的时候，执行器把 binlog cache 里的完整事务写入到 binlog 中，并清空 binlog cache。状态如图 1 所示。
 
-![img](md_image/9ed86644d5f39efb0efec595abb92e3e.png)
+![img](../md_image/9ed86644d5f39efb0efec595abb92e3e.png)
 
 可以看到，每个线程有自己 binlog cache，但是共用同一份 binlog 文件。
 
@@ -428,7 +428,7 @@ sync_binlog=N(N>1) 的时候，表示每次提交事务都 write，但累积 N �
 
 MySQL 中 redo log的三种状态：
 
-![img](md_image/9d057f61d3962407f413deebc80526d4.png)
+![img](../md_image/9d057f61d3962407f413deebc80526d4.png)
 
 1. 存在 redo log buffer 中，物理上是在 MySQL 进程内存中，就是图中的红色部分；
 2. 写到磁盘 (write)，但是没有持久化（fsync)，物理上是在文件系统的 page cache 里面，也就是图中的黄色部分；
@@ -465,7 +465,7 @@ InnoDB 有一个后台线程，每隔 1 秒，就会把 redo log buffer 中的�
 
 如图 3 所示，是三个并发事务 (trx1, trx2, trx3) 在 prepare 阶段，都写完 redo log buffer，持久化到磁盘的过程，对应的 LSN 分别是 50、120 和 160。
 
-<img src="md_image/933fdc052c6339de2aa3bf3f65b188cc.png" alt="img" style="zoom:80%;" />
+<img src="../md_image/933fdc052c6339de2aa3bf3f65b188cc.png" alt="img" style="zoom:80%;" />
 
 1. trx1 是第一个到达的，会被选为这组的 leader；
 2. 等 trx1 要开始写盘的时候，这个组里面已经有了三个事务，这时候 LSN 也变成了 160；
@@ -613,7 +613,7 @@ InnoDB 里面每个事务有一个唯一的事务 ID，叫作 transaction id。�
 
 InnoDB 为每个事务构造了一个数组，用来保存这个事务启动瞬间，当前正在“活跃”的所有事务 ID。“活跃”指的就是，启动了但还没提交。数组里面事务 ID 的最小值记为低水位，当前系统里面已经创建过的事务 ID 的最大值加 1 记为高水位。这个视图数组和高水位，就组成了当前事务的一致性视图（read-view）。
 
-![img](md_image/882114aaf55861832b4270d44507695e.png)
+![img](../md_image/882114aaf55861832b4270d44507695e.png)
 
 这样，对于当前事务的启动瞬间来说，一个数据版本的 row trx_id，有以下几种可能：
 
@@ -625,7 +625,7 @@ InnoDB 为每个事务构造了一个数组，用来保存这个事务启动瞬�
 
 接下来，我们继续看一下图 1 中的三个事务，分析下事务 A 的语句返回的结果，为什么是 k=1。
 
-![img](md_image/9416c310e406519b7460437cb0c5c149.png)
+![img](../md_image/9416c310e406519b7460437cb0c5c149.png)
 
 事务 A 开始前，系统里面只有一个活跃事务 ID 是 99；事务 A、B、C 的版本号分别是 100、101、102，且当前系统里只有这四个事务；三个事务开始前，(1,1）这一行数据的 row trx_id 是 90。这样，事务 A 的视图数组就是[99,100], 事务 B 的视图数组是[99,100,101], 事务 C 的视图数组是[99,100,101,102]。
 
@@ -668,7 +668,7 @@ mysql> select k from t where id=1 for update;			//加 写锁(X 锁，排他锁)
 
 当前读：而事务更新数据的时候，只能用当前读。如果当前的记录的行锁被其他事务占用的话，就需要进入锁等待。
 
-![img](md_image/cda2a0d7decb61e59dddc83ac51efb6e.png)
+![img](../md_image/cda2a0d7decb61e59dddc83ac51efb6e.png)
 
 事务 C’的不同是，更新后并没有马上提交，在它提交前，事务 B 的更新语句先发起了。前面说过了，虽然事务 C’还没提交，但是 (1,2) 这个版本也已经生成了，并且是当前的最新版本。那么，事务 B 的更新语句会怎么处理呢？
 
@@ -744,7 +744,7 @@ mysql> select k from t where id=1 for update;			//加 写锁(X 锁，排他锁)
 
 因为哈希数组是无序的，所以用哈希索引做区间索引是要遍历。
 
-<img src="md_image/0c62b601afda86fe5d0fe57346ace957.png" alt="img"  />
+<img src="../md_image/0c62b601afda86fe5d0fe57346ace957.png" alt="img"  />
 
 ### 有序数组
 
@@ -775,7 +775,7 @@ index (k))
 engine=InnoDB;
 ```
 
-![img](md_image/dcda101051f28502bd5c4402b292e38d.png)
+![img](../md_image/dcda101051f28502bd5c4402b292e38d.png)
 
 主键索引的叶子节点存的是整行数据。在 InnoDB 里，主键索引也被称为聚簇索引（clustered index）。
 
@@ -813,7 +813,7 @@ engine=InnoDB;
 
 insert into T values(100,1, 'aa'),(200,2,'bb'),(300,3,'cc'),(500,5,'ee'),(600,6,'ff'),(700,7,'gg');
 ```
-<img src="md_image/dcda101051f28502bd5c4402b292e38d-16391450822113.png" alt="img" style="zoom: 80%;" />
+<img src="../md_image/dcda101051f28502bd5c4402b292e38d-16391450822113.png" alt="img" style="zoom: 80%;" />
 
 ```mysql
 # k 为二级索引
@@ -844,7 +844,7 @@ MYSQL做词法分析语法分析的时候是通过建立最左子树来建立语
 
 举例1：我们用（name，age）这个联合索引来分析。
 
-<img src="md_image/89f74c631110cfbc83298ef27dcd6370.jpg" alt="img" style="zoom:80%;" />
+<img src="../md_image/89f74c631110cfbc83298ef27dcd6370.jpg" alt="img" style="zoom:80%;" />
 
 当你的逻辑需求是查到所有名字是“张三”的人时，可以快速定位到 ID4，然后向后遍历得到所有需要的结果。
 
@@ -881,7 +881,7 @@ index condition pushdown，ICP 索引下推优化： 是Mysql 5.6版本引入的
 
 在Explain输出的Extra字段中会有“Using index condition”。即代表本次查询会利用到索引，且会利用到索引下推。
 
-![image-20211210221939961](md_image/image-20211210221939961.png)
+![image-20211210221939961](../md_image/image-20211210221939961.png)
 
 图 4 跟图 3 的区别是，InnoDB 在 (name,age) 索引内部就判断了 age 是否等于 10，对于不等于 10 的记录，直接判断并跳过。在我们的这个例子中，只需要对 ID4、ID5 这两条记录回表取数据判断，就只需要回表 2 次。
 
@@ -916,7 +916,7 @@ InnoDB会把主键字段放到索引定义字段后面， 当然同时也会去�
 select id from T where k=5
 ```
 
-<img src="md_image/1ed9536031d6698570ea175a7b7f9a46.png" alt="img" style="zoom: 80%;" />
+<img src="../md_image/1ed9536031d6698570ea175a7b7f9a46.png" alt="img" style="zoom: 80%;" />
 
 对于普通索引来说，查找到满足条件的第一个记录 (5,500) 后，需要查找下一个记录，直到碰到第一个不满足 k=5 条件的记录。对于唯一索引来说，由于索引定义了唯一性，查找到第一个满足条件的记录后，就会停止继续检索。
 
@@ -952,7 +952,7 @@ change buffer 用的是 buffer pool 里的内存，因此不能无限增大。ch
 mysql> insert into t(id,k) values(id1,k1),(id2,k2);
 ```
 
-<img src="md_image/980a2b786f0ea7adabef2e64fb4c4ca3.png" alt="img" style="zoom: 67%;" />
+<img src="../md_image/980a2b786f0ea7adabef2e64fb4c4ca3.png" alt="img" style="zoom: 67%;" />
 
 分析这条更新语句，你会发现它涉及了四个部分：内存、redo log（ib_log_fileX）、 数据表空间（t.ibd）、系统表空间（ibdata1）。
 
@@ -970,7 +970,7 @@ select * from t where k in (k1, k2)
 
 如果读语句发生在更新语句后不久，内存中的数据都还在，那么此时的这两个读操作就与系统表空间（ibdata1）和 redo log（ib_log_fileX）无关了。所以，我在图中就没画出这两部分。
 
-<img src="md_image/6dc743577af1dbcbb8550bddbfc5f98e.png" alt="img" style="zoom:67%;" />
+<img src="../md_image/6dc743577af1dbcbb8550bddbfc5f98e.png" alt="img" style="zoom:67%;" />
 
 
 
@@ -1575,7 +1575,7 @@ CREATE TABLE `friend` (
 
 问题是：如果 A、B 同时关注对方，会出现不会成为好友的情况。因为上面第 1 步，双方都没关注对方。第 1 步即使使用了排他锁也不行，因为记录不存在，行锁无法生效。请问这种情况，在 MySQL 锁层面有没有办法处理？（**即在并发场景下，同时有两个人，设置为关注对方，就可能导致无法成功加为朋友关系。**）
 
-![img](md_image/c45063baf1ae521bf5d98b6d7c0e0ced.png)
+![img](../md_image/c45063baf1ae521bf5d98b6d7c0e0ced.png)
 
 解决方案：(**确保两者操作同一行数据，进而通过行锁强制两者串行执行**)
 
@@ -1714,7 +1714,7 @@ select city,name,age from t where city='杭州' order by name limit 1000;  -- �
 3. 从索引 (city,name) 取下一个记录主键 id；
 4. 重复步骤 2、3，直到查到第 1000 条记录，或者是不满足 city='杭州’条件时循环结束。
 
-![img](md_image/3f590c3a14f9236f2d8e1e2cb9686692.jpg)
+![img](../md_image/3f590c3a14f9236f2d8e1e2cb9686692.jpg)
 
 可以看到，优化后的 order by 语句不需要临时表，也不需要排序。
 
@@ -1917,7 +1917,7 @@ QPS每秒查询率(Query Per Second)
 
 ## 1. MySQL 主备基本原理
 
-![img](md_image/fd75a2b37ae6ca709b7f16fe060c2c10.png)
+![img](../md_image/fd75a2b37ae6ca709b7f16fe060c2c10.png)
 
 在状态 1 中，客户端的读写都直接访问节点 A，而节点 B 是 A 的备库，只是将 A 的更新都同步过来，到本地执行。这样可以保持节点 B 和 A 的数据是相同的。
 
@@ -1937,7 +1937,7 @@ QPS每秒查询率(Query Per Second)
 
 图中画出的就是一个 update 语句在节点 A 执行，然后同步到节点 B 的完整流程图。
 
-![img](md_image/a66c154c1bc51e071dd2cc8c1d6ca6a3.png)
+![img](../md_image/a66c154c1bc51e071dd2cc8c1d6ca6a3.png)
 
 主库接收到客户端的更新请求后，执行内部事务的更新逻辑，同时写 binlog。
 
@@ -1954,7 +1954,7 @@ QPS每秒查询率(Query Per Second)
 
 实际生产上使用比较多的是双 M 结构，也就是下图所示的主备切换流程。
 
-![img](md_image/20ad4e163115198dc6cf372d5116c956.png)
+![img](../md_image/20ad4e163115198dc6cf372d5116c956.png)
 
 你可以发现，双 M 结构和 M-S 结构，其实区别只是多了一条线，即：节点 A 和 B 之间总是互为主备关系。这样在切换的时候就不用再修改主备关系。
 
@@ -2016,7 +2016,7 @@ seconds_behind_master 的计算方法是这样的：
 
 ## 2. 可靠性优先策略
 
-![img](md_image/54f4c7c31e6f0f807c2ab77f78c8844a.png)
+![img](../md_image/54f4c7c31e6f0f807c2ab77f78c8844a.png)
 
 在图 1 的双 M 结构下，从状态 1 到状态 2 切换的详细过程是这样的：
 
@@ -2032,7 +2032,7 @@ seconds_behind_master 的计算方法是这样的：
 
 ## 3. 可用性优先策略
 
-![img](md_image/3786bd6ad37faa34aca25bf1a1d8af3a.png)
+![img](../md_image/3786bd6ad37faa34aca25bf1a1d8af3a.png)
 
 1. 步骤 2 中，主库 A 执行完 insert 语句，插入了一行数据（4,4），之后开始进行主备切换。
 2. 步骤 3 中，由于主备之间有 5 秒的延迟，所以备库 B 还没来得及应用“插入 c=4”这个中转日志，就开始接收客户端“插入 c=5”的命令。
@@ -2048,7 +2048,7 @@ seconds_behind_master 的计算方法是这样的：
 
 主要的问题来源就是：**主备的并行复制能力**；
 
-![img](md_image/1a85a3bac30a32438bfd8862e5a34eef.png)
+![img](../md_image/1a85a3bac30a32438bfd8862e5a34eef.png)
 
 在主库上，影响并发度的原因就是各种锁了。由于 InnoDB 引擎支持行锁，除了所有并发事务都在更新同一行（热点行）这种极端场景外，它对业务并发度的支持还是很友好的。
 
@@ -2060,7 +2060,7 @@ seconds_behind_master 的计算方法是这样的：
 
 都是要把图 1 中只有一个线程的 sql_thread，拆成多个线程，也就是都符合下面的这个模型：
 
-![img](md_image/bcf75aa3b0f496699fd7885426bc6245.png)
+![img](../md_image/bcf75aa3b0f496699fd7885426bc6245.png)
 
 coordinator 就是原来的 sql_thread, 不过现在它不再直接更新数据了，只负责读取中转日志和分发事务。真正更新日志的，变成了 worker 线程。而 work 线程的个数，就是由参数 slave_parallel_workers 决定的。根据我的经验，把这个值设置为 8~16 之间最好（32 核物理机的情况），毕竟备库还有可能要提供读查询，不能把 CPU 都吃光了。
 
@@ -2085,7 +2085,7 @@ coordinator 在分发的时候，需要满足以下这两个基本要求：
 
 可以看到，每个 worker 线程对应一个 hash 表，用于保存当前正在这个 worker 的“执行队列”里的事务所涉及的表。hash 表的 key 是“库名. 表名”，value 是一个数字，表示队列中有多少个事务修改这个表。
 
-![img](md_image/8b6976fedd6e644022d4026581fb8d76.png)
+![img](../md_image/8b6976fedd6e644022d4026581fb8d76.png)
 
 假设在图中的情况下，coordinator 从中转日志中读入一个新事务 T，这个事务修改的行涉及到表 t1 和 t3。现在我们用事务 T 的分配流程，来看一下分配规则。
 
@@ -2126,7 +2126,7 @@ CREATE TABLE `t1` (
 insert into t1 values(1,1,1),(2,2,2),(3,3,3),(4,4,4),(5,5,5);
 ```
 
-![img](md_image/f19916e27b8ff28e87ed3ad9f5473378.png)
+![img](../md_image/f19916e27b8ff28e87ed3ad9f5473378.png)
 
 例如在这个例子中：这两个事务要更新的行的主键值不同，但是如果它们被分到不同的 worker，就有可能 session B 的语句先执行。这时候 id=1 的行的 a 的值还是 1，就会报唯一键冲突。
 
@@ -2166,7 +2166,7 @@ insert into t1 values(1,1,1),(2,2,2),(3,3,3),(4,4,4),(5,5,5);
 
 # 第27讲 一主多从架构的主备切换问题
 
-![img](md_image/aadb3b956d1ffc13ac46515a7d619e79.png)
+![img](../md_image/aadb3b956d1ffc13ac46515a7d619e79.png)
 
 图中，虚线箭头表示的是主备关系，也就是 A 和 A’互为主备， 从库 B、C、D 指向的是主库 A。一主多从的设置，一般用于读写分离，主库负责所有的写入和一部分读，其他的读请求则由从库分担，主要应用于互联网中最常见的度多写少场景。
 
@@ -2174,7 +2174,7 @@ insert into t1 values(1,1,1),(2,2,2),(3,3,3),(4,4,4),(5,5,5);
 
 什么是主备切换？
 
-![img](md_image/0014f97423bd75235a9187f492fb2453.png)
+![img](../md_image/0014f97423bd75235a9187f492fb2453.png)
 
 相比于一主一备的切换流程，一主多从结构在切换完成后，A’会成为新的主库，从库 B、C、D 也要改接到 A’。正是由于多了从库 B、C、D 重新指向的这个过程，所以主备切换的复杂性也相应增加了。
 
@@ -2255,7 +2255,7 @@ insert into t values(1,1);
 
 初始化数据的 binlog（statement格式）：
 
-![img](md_image/28a5cab0079fb12fd5abecd92b3324c2.png)
+![img](../md_image/28a5cab0079fb12fd5abecd92b3324c2.png)
 
 可以看到，事务的 BEGIN 之前有一条 SET @@SESSION.GTID_NEXT 命令。这时，如果实例 X 有从库，那么将 CREATE TABLE 和 insert 语句的 binlog 同步过去执行的话，执行事务之前就会先执行这两个 SET 命令， 这样被加入从库的 GTID 集合的，就是图中的这两个 GTID。
 
@@ -2279,7 +2279,7 @@ start slave;
 
 其中，前三条语句的作用，是通过提交一个空事务，把这个 GTID 加到实例 X 的 GTID 集合中。如图 5 所示，就是执行完这个空事务之后的 show master status 的结果。
 
-![img](md_image/c8d3299ece7d583a3ecd1557851ed157.png)
+![img](../md_image/c8d3299ece7d583a3ecd1557851ed157.png)
 
 这样，我再执行 start slave 命令让同步线程执行起来的时候，虽然实例 X 上还是会继续执行实例 Y 传过来的事务，但是由于“aaaaaaaa-cccc-dddd-eeee-ffffffffffff:10”已经存在于实例 X 的 GTID 集合中了，所以实例 X 就会直接跳过这个事务，也就不会再出现主键冲突的错误。
 
@@ -2376,7 +2376,7 @@ show slave status 结果里的 seconds_behind_master 参数的值，可以用来
 
 #### 方法二：对比位点
 
-![img](md_image/00110923007513e865d7f43a124887c1.png)
+![img](../md_image/00110923007513e865d7f43a124887c1.png)
 
 Master_Log_File 和 Read_Master_Log_Pos，表示的是读到的主库的最新位点；
 
@@ -2400,7 +2400,7 @@ Executed_Gtid_Set，是备库所有已经执行完成的 GTID 集合。
 
 但是上面的判断主备无延迟的逻辑，是基于“备库收到的日志都执行完成了”。但是，从 binlog 在主备之间状态的分析中，不难看出还有一部分日志，处于客户端已经收到提交确认，而备库还没收到日志的状态。
 
-![img](md_image/557445207b57d6c0f2747509d7d6619e.png)
+![img](../md_image/557445207b57d6c0f2747509d7d6619e.png)
 
 这时，主库上执行完成了三个事务 trx1、trx2 和 trx3，其中：
 
@@ -2434,7 +2434,7 @@ Executed_Gtid_Set，是备库所有已经执行完成的 GTID 集合。
 
 解释二：如果在业务更新的高峰期，主库的位点或者 GTID 集合更新很快，那么上面的两个位点等值判断就会一直不成立，很可能出现从库上迟迟无法响应查询请求的情况。
 
-![img](md_image/9cf54f3e91dc8f7b8947d7d8e384aa09.png)
+![img](../md_image/9cf54f3e91dc8f7b8947d7d8e384aa09.png)
 
 例如图中的情况就是一个等待位点方案的一个 bad case。图中备库 B 下的虚线框，分别表示 relaylog 和 binlog 中的事务。可以看到，图 5 中从状态 1 到状态 4，一直处于延迟一个事务的状态。但是，其实客户端是在发完 trx1 更新后发起的 select 语句，我们只需要确保 trx1 已经执行完成就可以执行 select 语句了。也就是说，如果在状态 3 执行查询请求，得到的就是预期结果了。
 
@@ -2455,7 +2455,7 @@ select master_pos_wait(file, pos[, timeout]);
 */
 ```
 
-![img](md_image/b20ae91ea46803df1b63ed683e1de357.png)
+![img](../md_image/b20ae91ea46803df1b63ed683e1de357.png)
 
 具体流程：
 
@@ -2655,7 +2655,7 @@ select * from t1 straight_join t2 on (t1.a=t2.a);
 
 ### NLJ空间复杂度
 
-![img](md_image/d83ad1cbd6118603be795b26d38f8df6-16395764902872.jpg)
+![img](../md_image/d83ad1cbd6118603be795b26d38f8df6-16395764902872.jpg)
 
 ```mysql
 select * from t1 straight_join t2 on (t1.a=t2.a);
