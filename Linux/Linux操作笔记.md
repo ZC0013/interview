@@ -231,3 +231,240 @@ libedit-devel
 ```
 
 php下载官网：https://www.php.net/downloads
+
+
+
+
+
+
+
+# CentOS  7.7 64位  wordpress搭建
+
+Apache是世界使用排名第一的Web服务器软件。它可以运行在几乎所有广泛使用的计算机平台上，由于其跨平台和安全性被广泛使用，是最流行的Web服务器端软件之一。
+
+
+
+\1. 执行如下命令，安装Apache服务及其扩展包。
+
+![img](md_image/20210724183746.jpg)
+
+```
+yum -y install httpd mod_ssl mod_perl mod_auth_mysql
+```
+
+\2. 执行如下命令，启动Apache服务。
+
+```
+systemctl start httpd.service
+```
+
+\3. 测试Apache服务是否安装并启动成功。
+
+Apache默认监听80端口，所以只需在浏览器访问ECS分配的IP地址http://<ECS公网地址>，如下图：
+
+![img](md_image/20210724184114.jpg)
+
+\4. 安装 MariaDB 数据库
+
+由于使用Wordpress搭建云上博客，需要使用MySQL数据库存储数据，这一小节我们将安装MySQL的开源替代品MariaDB（MariaDB完全兼容MySQL），并创建博客数据库。
+
+**1. 安装MariaDB Server，执行如下命令：**
+
+```
+yum install -y mariadb-server
+```
+
+安装成功会出现如下结果
+
+![img](md_image/20210724184740.jpg)
+
+**2. 启动MariaDB Server，执行如下命令：**
+
+```
+systemctl start mariadb
+```
+
+*注：可执行如下命令查看MariaDB Server运行状态*
+
+```
+systemctl status mariadb
+```
+
+*如果出现如图中的绿色active (running)表示服务启动成功*
+
+![img](md_image/20210724184848.jpg)
+
+**3. 设置数据库初始密码，执行如下命令：**
+
+```
+mysqladmin -u root -p password
+```
+
+*由于是第一次设置密码，因此在出现Enter Password的时候直接回车即可，然后输入您要设置的密码（本示例我们设置的密码为***123456789***），并两次确认即可，***请记住您设置的这个密码***，用于数据库登陆和链接操作。*
+
+**说明：***密码不显示。*
+
+![img](md_image/20210724185144.jpg)
+
+**4. 链接数据库，执行如下命令：**
+
+```
+mysql -uroot -p
+```
+
+*在出现Enter password提示符的时候，输入上面您设置的密码，即可登录数据。*
+
+**5. 创建数据库**
+
+接着上面登陆数据库后，我们要为博客创建一个数据库，这里数据库名设置为wordpress（您也可以采用其他喜欢的名字），执行如下命令创建wordpress数据库：
+
+```
+create database wordpress;
+```
+
+*如果要查看创建的数据库，可以数据如下命令：*
+
+```
+show databases;
+```
+
+![img](md_image/20210724190758.jpg)
+
+**6. 退出数据库连接操作**
+
+我们暂时退出数据库连接操作，进入下一节安装PHP语言环境
+
+```
+exit;
+```
+
+\5. 安装 PHP 语言环境
+
+WordPress是使用PHP语言开发的博客平台，用户可以在支持PHP和MySQL数据库的服务器上架设属于自己的网站。也可以把WordPress当作一个内容管理系统（CMS）来使用。
+
+**1. 安装PHP环境，执行如下命令：**
+
+```
+yum -y install php php-mysql gd php-gd gd-devel php-xml php-common php-mbstring php-ldap php-pear php-xmlrpc php-imap
+```
+
+![img](md_image/20210724191833.jpg)
+
+ **2. 创建PHP测试页面，执行如下命令：**
+
+```
+echo "<?php phpinfo(); ?>" > /var/www/html/phpinfo.php
+```
+
+**3. 重启Apache服务，执行如下命令：**
+
+```
+systemctl restart httpd
+```
+
+\4. 测试PHP页面
+
+访问`http://<ECS公网地址>/phpinfo.php`，显示如下页面表示PHP语言环境安装成功
+
+![img](md_image/TB1oCVpaepyVu4jSZFhXXbBpVXa-601-840.png)
+
+\1. Wordpress安装和配置
+
+接上节，我们已经搭建好了LAMP（Linux、Apache、MariaDB、PHP）环境，本小节我们开始WordPress程序包。
+
+
+
+**1. 安装wordpress，执行如下命令：**
+
+```
+yum -y install wordpress
+```
+
+*显示如下信息表示安装成功*
+
+![img](md_image/20210724192228.jpg)
+
+**2. 修改WordPress配置文件**
+
+1）执行如下命令，修改wp-config.php指向路径为绝对路径
+
+```
+# 进入/usr/share/wordpress目录。
+cd /usr/share/wordpress
+# 修改路径。
+ln -snf /etc/wordpress/wp-config.php wp-config.php
+# 查看修改后的目录结构。
+ll
+```
+
+2）执行如下命令，移动wordpress到Apache根目录
+
+```
+# 在Apache的根目录/var/www/html下，创建一个wp-blog文件夹。
+mkdir /var/www/html/wp-blog
+mv * /var/www/html/wp-blog/
+```
+
+3）执行以下命令修改wp-config.php配置文件。 在执行命令前，请注意替换命令中的以下三个参数值。 ** database_name_here：为之前步骤中创建的数据库名称，本示例为***wordpress** ** username_here：为数据库的用户名，本示例为***root** ** password_here：为数据库的登录密码，即为安装MariaDB时我们设置的密码（本示例设置的密码为***422302***）*
+
+```
+sed -i 's/database_name_here/wordpress/' /var/www/html/wp-blog/wp-config.php
+sed -i 's/username_here/root/' /var/www/html/wp-blog/wp-config.php
+sed -i 's/password_here/422302/' /var/www/html/wp-blog/wp-config.php
+```
+
+4）执行以下命令，查看配置文件信息是否修改成功
+
+```
+cat -n /var/www/html/wp-blog/wp-config.php
+```
+
+![img](md_image/0d547431dde943bc8cc5e12b841fbb75.png)
+
+**3. 重启Apache服务，执行如下命令：**
+
+```
+systemctl restart httpd
+```
+
+
+
+\2. 测试Wordpress
+
+完成以上所有步骤后，就可以测试我们基于ECS所搭建的云上博客了。
+
+**1. 打开浏览器并访问** http://<ECS公网IP>/wp-blog/wp-admin/install.php
+
+ECS公网IP的获取位置参见下图
+
+![img](md_image/1637568548018-6db4aa3f-7f46-4465-9889-eb28728237c9.png)
+
+
+
+**2. 根据以下信息完成wordpress初始化配置，然后点击Install WordPress按钮完成Wordpress初始化**
+
+*Site Title：站点名称，例如：Hello ADC Username：管理员用户名，例如：admin Password：访问密码，例如：cIxWg9t@a8MJBAnf%j Your Email：email地址，建议为真实有效的地址。若没有，可以填写虚拟email地址，但将无法接收信息，例如：admin@admin.com*
+
+
+
+![img](md_image/TB1pCnYHuH2gK0jSZFEXXcqMpXa-723-689.png)
+
+
+
+
+
+**3. 单击Log In进行登录，输入上一步设置的用户名和密码**
+
+![img](md_image/TB1ear2HxD1gK0jSZFyXXciOVXa-803-464.png)
+
+
+
+![img](md_image/TB1kknYHAL0gK0jSZFAXXcA9pXa-704-862.png)
+
+
+
+
+
+**4. 登陆成功，登录后，您就可以添加博客进行发布了**
+
+![img](md_image/TB1q7nYHAL0gK0jSZFAXXcA9pXa-939-420.png)
