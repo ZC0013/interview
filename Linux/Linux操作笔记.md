@@ -2,6 +2,8 @@
 
 公网IP : 47.109.24.238
 
+域名：
+
 密码：Zhangchuang0013
 
 
@@ -39,18 +41,18 @@ https://www.jianshu.com/p/ba08713c2b19
 
 # Linux 指令
 
-## 传送文件指令
+## 1. 传送文件指令
 
 ```cmake
 # Mac 传送给 服务器
-scp soapui-settings.xml root@10.211.55.5:~
+scp soapui-settings.xml root@47.109.24.238:~
 
 # 服务器 到 本地 Mac
 scp root@10.211.55.5:~/soapui-settings.xml soapui-settings.xml1
 # 就是将10.211.55.5这台机器上root用户下~目录下soapui-settings.xml文件下载到当前目录下,并保存为soapui-settings.xml1
 ```
 
-## 查询命令
+## 2. 查询命令
 
 ### 1. linux命令查询一个文件的行数
 
@@ -159,7 +161,73 @@ sort -k1,1nr: 按照第一个字段，数值排序，且为逆序
 
 head -10: 取前10行数据
 
+## 3. wegt命令
+
+在 linux 下 下载文件的命令
+
+```cmake
+将文件下载到当前文件夹
+wget https://www.php.net/distributions/php-8.1.1.tar.gz
+```
+
+## 4. 解压命令
 
 
 
+```
+tar -zxvf nginx-1.20.2.tar.gz
+```
 
+
+
+# nginx
+
+nginx 的安装目录：`/usr/local/nginx`
+
+nginx 的压缩包及源码目录：`/opt/softApp`
+
+在nginx的工作目录有四个文件夹
+
+- conf -----配置文件
+- html -----网页文件
+- logs -----日志文件
+- sbin -----主要二进制程序
+
+```cmake
+nginx 启动和关闭命令：
+./sbin/nginx
+./sbin/nginx -s stop
+查看 nginx 状态命令
+netstat -antp
+```
+
+nginx下载官网：https://nginx.org/en/download.html
+
+nginx官方主页：https://nginx.org/en/
+
+参考：https://blog.csdn.net/u011781521/article/details/75675019
+
+https://www.cnblogs.com/boonya/p/7907999.html
+
+
+
+# php
+
+安装依赖：
+
+```
+yum install gcc \
+gcc-c++ \
+libxml2-devel \
+openssl-devel \
+libcurl-devel \
+freetype-devel \
+libjpeg-devel \
+libpng-devel \
+libxslt-devel \
+systemd-devel \
+libicu-devel
+libedit-devel
+```
+
+php下载官网：https://www.php.net/downloads
